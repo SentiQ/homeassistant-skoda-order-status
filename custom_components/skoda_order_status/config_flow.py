@@ -151,15 +151,11 @@ class SkodaOrderStatusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         config_entry: config_entries.ConfigEntry,
     ) -> OptionsFlow:
         """Create the options flow."""
-        return SkodaOrderStatusOptionsFlow(config_entry)
+        return SkodaOrderStatusOptionsFlow()
 
 
 class SkodaOrderStatusOptionsFlow(OptionsFlow):
     """Handle options for Škoda Order Status."""
-
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """Initialize options flow."""
-        self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
