@@ -1,8 +1,14 @@
 # Škoda Order Status for Home Assistant
 
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+
 Home Assistant integration to track the status of a **pending Škoda vehicle order** via the unofficial MyŠkoda API.
 
 This fills the gap left by the official Škoda integration: order tracking in the MyŠkoda app ("Track & Explore") works **before** a VIN exists.
+
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=SentiQ&repository=homeassistant-skoda-order-status&category=integration)
+
+[![Open your Home Assistant instance and start setting up this integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=skoda_order_status)
 
 ## Features
 
@@ -16,17 +22,27 @@ This fills the gap left by the official Škoda integration: order tracking in th
 
 ### HACS (recommended)
 
+This integration is a **custom HACS repository** (not in the default HACS store).
+
 1. Open **HACS → Integrations**
 2. Click the menu (⋮) → **Custom repositories**
 3. Add `https://github.com/SentiQ/homeassistant-skoda-order-status`
-4. Category: **Integration**
-5. Install **Škoda Order Status** and restart Home Assistant
+4. Category: **Integration** → click **Add**
+5. Back in **HACS → Integrations**, search for **Škoda Order Status**
+6. Click **Download** (pick a [release](https://github.com/SentiQ/homeassistant-skoda-order-status/releases) version if available)
+7. **Restart Home Assistant**
+
+**Shortcut:** Use the **Open in HACS** button at the top of this README (requires [My Home Assistant](https://my.home-assistant.io/) link to your instance).
+
+Without GitHub releases, HACS only shows the commit hash of the `main` branch instead of a version number.
 
 ### Manual
 
 Copy `custom_components/skoda_order_status` into your Home Assistant `custom_components` directory and restart.
 
 ## Configuration
+
+After installation and restart, use the **Add integration** button above or:
 
 1. Go to **Settings → Devices & services → Add integration**
 2. Search for **Škoda Order Status**
