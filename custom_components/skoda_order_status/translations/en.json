@@ -1,0 +1,46 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Škoda Order Status",
+        "description": "Sign in with your MyŠkoda account credentials.",
+        "data": {
+          "username": "Email",
+          "password": "Password"
+        }
+      },
+      "order": {
+        "title": "Select order",
+        "description": "Choose the order that should be exposed in Home Assistant.",
+        "data": {
+          "commission_id": "Order"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the MyŠkoda API.",
+      "invalid_auth": "Authentication failed. Check your credentials.",
+      "no_orders": "No open Škoda order was found in the MyŠkoda account."
+    },
+    "abort": {
+      "already_configured": "This order is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Škoda Order Status",
+        "data": {
+          "scan_interval": "Update interval in seconds"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "order_status": {
+        "name": "Order status"
+      }
+    }
+  }
+}

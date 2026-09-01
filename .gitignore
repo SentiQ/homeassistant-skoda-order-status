@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.ha
+.refresh_token
+logs/
+.DS_Store
+.python-version

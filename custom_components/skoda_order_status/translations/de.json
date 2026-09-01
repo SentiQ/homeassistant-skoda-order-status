@@ -1,0 +1,46 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Škoda Order Status",
+        "description": "Melde dich mit deinen MyŠkoda-Zugangsdaten an.",
+        "data": {
+          "username": "E-Mail",
+          "password": "Passwort"
+        }
+      },
+      "order": {
+        "title": "Bestellung auswählen",
+        "description": "Wähle die Bestellung, die in Home Assistant angezeigt werden soll.",
+        "data": {
+          "commission_id": "Bestellung"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zur MyŠkoda-API fehlgeschlagen.",
+      "invalid_auth": "Anmeldung fehlgeschlagen. Bitte Zugangsdaten prüfen.",
+      "no_orders": "Keine offene Škoda-Bestellung im MyŠkoda-Konto gefunden."
+    },
+    "abort": {
+      "already_configured": "Diese Bestellung ist bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Škoda Order Status",
+        "data": {
+          "scan_interval": "Aktualisierungsintervall in Sekunden"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "order_status": {
+        "name": "Bestellstatus"
+      }
+    }
+  }
+}
