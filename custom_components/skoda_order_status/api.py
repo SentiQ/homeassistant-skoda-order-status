@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import json
 import logging
+from ssl import SSLContext
 from typing import Any
 
 from aiohttp import ClientSession
-from homeassistant.util.ssl import SSLContext
 from myskoda import MySkoda
 
 from .const import GARAGE_PATH
