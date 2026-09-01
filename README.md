@@ -1,14 +1,14 @@
 # Škoda Order Status for Home Assistant
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)
 
 Home Assistant integration to track the status of a **pending Škoda vehicle order** via the unofficial MyŠkoda API.
 
 This fills the gap left by the official Škoda integration: order tracking in the MyŠkoda app ("Track & Explore") works **before** a VIN exists.
 
-[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=SentiQ&repository=homeassistant-skoda-order-status&category=integration)
+![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)
 
-[![Open your Home Assistant instance and start setting up this integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=skoda_order_status)
+![Open your Home Assistant instance and start setting up this integration.](https://my.home-assistant.io/badges/config_flow_start.svg)
 
 ## Features
 
@@ -18,7 +18,11 @@ This fills the gap left by the official Škoda integration: order tracking in th
 - Configurable polling interval (default: 1 hour)
 - Refresh token stored securely in the config entry
 
+
+
 ## Installation
+
+
 
 ### HACS (recommended)
 
@@ -27,14 +31,8 @@ This integration is a **custom HACS repository** (not in the default HACS store)
 1. Open **HACS → Integrations**
 2. Click the menu (⋮) → **Custom repositories**
 3. Add `https://github.com/SentiQ/homeassistant-skoda-order-status`
-4. Category: **Integration** → click **Add**
-5. Back in **HACS → Integrations**, search for **Škoda Order Status**
-6. Click **Download** (pick a [release](https://github.com/SentiQ/homeassistant-skoda-order-status/releases) version if available)
-7. **Restart Home Assistant**
-
-**Shortcut:** Use the **Open in HACS** button at the top of this README (requires [My Home Assistant](https://my.home-assistant.io/) link to your instance).
-
-Without GitHub releases, HACS only shows the commit hash of the `main` branch instead of a version number.
+4. Click **Download** (pick a [release](https://github.com/SentiQ/homeassistant-skoda-order-status/releases) version if available)
+5. **Restart Home Assistant**
 
 ### Manual
 
@@ -49,15 +47,21 @@ After installation and restart, use the **Add integration** button above or:
 3. Sign in with your MyŠkoda email and password
 4. Select your order if multiple are available
 
+
+
 ### Options
 
 - **Update interval**: polling interval in seconds (900–86400, default 3600)
 
+
+
 ## Entities
 
-| Entity | Description |
-|--------|-------------|
+
+| Entity                          | Description          |
+| ------------------------------- | -------------------- |
 | `sensor.<device>_bestellstatus` | Current order status |
+
 
 Attributes include model, trim, colours, commission ID, checkpoint dates, and pending steps.
 
@@ -85,6 +89,8 @@ automation:
             {% endif %}
 ```
 
+
+
 ## Legacy script
 
 The original cron-based poller is still available in `scripts/poll_order_status.py` for reference.
@@ -101,6 +107,8 @@ Repository validation (HACS + hassfest) runs via GitHub Actions. See [HACS publi
 # Local syntax check
 python3 -m compileall custom_components/skoda_order_status
 ```
+
+
 
 ## License
 
