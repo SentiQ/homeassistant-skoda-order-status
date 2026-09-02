@@ -79,22 +79,9 @@ automation:
             {% endif %}
 ```
 
-## Legacy script
-
-The original cron-based poller is still available in `scripts/poll_order_status.py` for reference.
-
 ## Disclaimer
 
 This integration uses an **unofficial, reverse-engineered** MyŠkoda API. It is not affiliated with Škoda Auto. Use at your own risk.
-
-## Development
-
-Repository validation (HACS + hassfest) runs via GitHub Actions. See [HACS publisher documentation](https://www.hacs.xyz/docs/publish/).
-
-```bash
-# Local syntax check
-python3 -m compileall custom_components/skoda_order_status
-```
 
 ## License
 
