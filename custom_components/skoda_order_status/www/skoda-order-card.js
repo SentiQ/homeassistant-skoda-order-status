@@ -31,9 +31,92 @@ function cropCss(crop) {
   };
 }
 
+const VIEW_STORAGE_PREFIX = "skoda-order-card:";
+const VIEW_OPTIONS = [
+  { value: "side", label: "Seite" },
+  { value: "front", label: "Front" },
+  { value: "rear", label: "Heck" },
+  { value: "interior_front", label: "Innenraum vorne" },
+  { value: "interior_side", label: "Innenraum Seite" },
+  { value: "boot", label: "Kofferraum" },
+];
+
+function viewStorageKey(entityId) {
+  return `${VIEW_STORAGE_PREFIX}${entityId}:view`;
+}
+
+function configViewStorageKey(entityId) {
+  return `${VIEW_STORAGE_PREFIX}${entityId}:configView`;
+}
+
+function storageGet(key) {
+  try {
+    return window.localStorage.getItem(key);
+  } catch (err) {
+    return null;
+  }
+}
+
+function storageSet(key, value) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch (err) {
+    /* ignore quota / private mode */
+  }
+}
+
+function writeStoredView(entityId, viewId) {
+  storageSet(viewStorageKey(entityId), viewId);
+}
+
+function collectImages(attr) {
+  if (Array.isArray(attr.images) && attr.images.length) {
+    return attr.images.filter((item) => item && item.id && item.url);
+  }
+  if (attr.entity_picture) {
+    return [{ id: "side", label: "Seite", url: attr.entity_picture, crop: attr.image_crop || null }];
+  }
+  return [];
+}
+
+function resolveViewId(images, entityId, configView, preferConfig) {
+  const ids = new Set(images.map((item) => item.id));
+  const configured = configView && ids.has(configView)
+    ? configView
+    : (ids.has("side") ? "side" : (images[0] ? images[0].id : null));
+  if (!configured) return null;
+  if (preferConfig || !entityId) return configured;
+
+  const lastConfig = storageGet(configViewStorageKey(entityId));
+  if (lastConfig !== configured) {
+    storageSet(configViewStorageKey(entityId), configured);
+    if (lastConfig !== null) {
+      storageSet(viewStorageKey(entityId), configured);
+      return configured;
+    }
+  }
+  const stored = storageGet(viewStorageKey(entityId));
+  if (stored && ids.has(stored)) return stored;
+  return configured;
+}
+
+function photoBox(images, currentImage) {
+  const frameCrop = (currentImage && currentImage.crop)
+    || ((images.find((item) => item && item.crop) || {}).crop)
+    || null;
+  const frame = cropCss(frameCrop);
+  const imgCrop = currentImage ? cropCss(currentImage.crop) : null;
+  return {
+    wrap: frame ? frame.wrap : "aspect-ratio:16/6;",
+    img: imgCrop
+      ? imgCrop.img
+      : "width:100%;height:100%;object-fit:cover;left:0;top:0;",
+  };
+}
+
 class SkodaOrderCard extends HTMLElement {
   static getStubConfig() {
-    return { layout: "combined" };
+    return { layout: "combined", view: "side" };
   }
 
   static getConfigForm() {
@@ -57,6 +140,15 @@ class SkodaOrderCard extends HTMLElement {
             },
           },
         },
+        {
+          name: "view",
+          selector: {
+            select: {
+              mode: "dropdown",
+              options: VIEW_OPTIONS,
+            },
+          },
+        },
       ],
     };
   }
@@ -65,7 +157,11 @@ class SkodaOrderCard extends HTMLElement {
     if (!config) {
       throw new Error("Ungültige Konfiguration");
     }
-    this._config = { layout: "combined", ...config };
+    this._config = { layout: "combined", view: "side", ...config };
+    this._lastState = undefined;
+    this._lastLayout = undefined;
+    this._lastView = undefined;
+    if (this._hass) this._render();
   }
 
   set hass(hass) {
@@ -109,9 +205,11 @@ class SkodaOrderCard extends HTMLElement {
     }
 
     const layout = this._config.layout || "combined";
+    const view = this._config.view || "side";
     if (!this._config.entity) {
       this._lastState = undefined;
       this._lastLayout = undefined;
+      this._lastView = undefined;
       this._shadow.innerHTML = `
         <ha-card><div class="pad warn">Bitte eine Entity wählen</div></ha-card>
         ${this._styles()}
@@ -122,6 +220,7 @@ class SkodaOrderCard extends HTMLElement {
     if (!state) {
       this._lastState = undefined;
       this._lastLayout = undefined;
+      this._lastView = undefined;
       this._shadow.innerHTML = `
         <ha-card><div class="pad warn">Entity nicht gefunden</div></ha-card>
         ${this._styles()}
@@ -129,7 +228,7 @@ class SkodaOrderCard extends HTMLElement {
       return;
     }
 
-    if (state === this._lastState && layout === this._lastLayout) return;
+    if (state === this._lastState && layout === this._lastLayout && view === this._lastView) return;
 
     const attr = state.attributes || {};
     const unavailable = state.state === "unavailable" || state.state === "unknown";
@@ -138,11 +237,23 @@ class SkodaOrderCard extends HTMLElement {
     const trim = attr.trim_level || "";
     const paint = attr.paint_name || "";
     const statusLabel = unavailable ? "nicht verfügbar" : state.state;
-    const picture = attr.entity_picture;
-    const showPhoto = !unavailable && picture && layout !== "timeline";
+    const images = collectImages(attr);
+    const viewId = resolveViewId(images, this._config.entity, view, this.preview);
+    const currentImage = images.find((item) => item.id === viewId) || images[0];
+    const showPhoto = !unavailable && currentImage && layout !== "timeline";
     const showHero = layout !== "timeline";
     const showTimeline = layout !== "hero";
-    const crop = cropCss(attr.image_crop);
+    const box = photoBox(images, currentImage);
+    const photoDots = images.length > 1
+      ? `<div class="photo-dots">${images.map((item) => `<span class="${item.id === currentImage.id ? "active" : ""}"></span>`).join("")}</div>`
+      : "";
+    const photoBlock = showPhoto ? `
+            <button type="button" class="photo-btn" aria-label="${esc(currentImage.label)}">
+            <div class="photo" style="${box.wrap}">
+              <img alt="${esc(currentImage.label)}" src="${esc(currentImage.url)}" style="${box.img}" />
+            </div>
+            ${photoDots}
+            </button>` : "";
 
     const reached = attr.checkpoints_reached || [];
     const reachedMap = Object.fromEntries(reached.map((item) => [item.status, item]));
@@ -187,9 +298,9 @@ class SkodaOrderCard extends HTMLElement {
 
     this._shadow.innerHTML = `
       <ha-card class="${unavailable ? "dim" : ""}">
-        <button class="hit" aria-label="Mehr Infos">
           ${showHero ? `
           <div class="hero">
+            <button class="hit" aria-label="Mehr Infos">
             <div class="hero-top">
               <div>
                 <div class="kicker">Škoda Bestellung</div>
@@ -197,12 +308,13 @@ class SkodaOrderCard extends HTMLElement {
               </div>
               <span class="badge">${layout === "timeline" ? "" : esc(statusLabel)}</span>
             </div>
-            ${showPhoto ? `
-            <div class="photo" style="${crop ? crop.wrap : "aspect-ratio:16/6;"}">
-              <img alt="${esc(model)}" src="${esc(picture)}" style="${crop ? crop.img : "width:100%;height:100%;object-fit:contain;left:0;top:0;"}" />
-            </div>` : ""}
+            </button>
+            ${photoBlock}
+            <button class="hit" aria-label="Mehr Infos">
             <div class="chips">${chips.map((c) => `<span class="chip">${esc(c)}</span>`).join("")}</div>
+            </button>
           </div>` : `
+          <button class="hit" aria-label="Mehr Infos">
           <div class="hero compact">
             <div class="hero-top">
               <div>
@@ -211,8 +323,10 @@ class SkodaOrderCard extends HTMLElement {
               </div>
               <span class="badge">${doneCount} / ${CHECKPOINTS.length}</span>
             </div>
-          </div>`}
+          </div>
+          </button>`}
           ${showTimeline ? `
+          <button class="hit" aria-label="Mehr Infos">
           ${showHero ? `<div class="divider"></div>` : ""}
           <div class="timeline ${unavailable ? "dim" : ""}">
             <div class="steps">
@@ -220,8 +334,8 @@ class SkodaOrderCard extends HTMLElement {
               ${mids}
               ${steps}
             </div>
-          </div>` : ""}
-        </button>
+          </div>
+          </button>` : ""}
       </ha-card>
       ${this._styles(accent)}
     `;
@@ -229,15 +343,29 @@ class SkodaOrderCard extends HTMLElement {
     const img = this._shadow.querySelector(".photo img");
     if (img) {
       img.addEventListener("error", () => {
-        const photo = this._shadow.querySelector(".photo");
-        if (photo) photo.remove();
+        const btn = this._shadow.querySelector(".photo-btn");
+        if (btn) btn.remove();
       });
     }
-    const hit = this._shadow.querySelector(".hit");
-    if (hit) hit.addEventListener("click", () => this._openMoreInfo());
+    const photoBtn = this._shadow.querySelector(".photo-btn");
+    if (photoBtn && images.length >= 2) {
+      photoBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const idx = images.findIndex((item) => item.id === currentImage.id);
+        const next = images[(idx + 1) % images.length];
+        writeStoredView(this._config.entity, next.id);
+        this._lastState = undefined;
+        this._render();
+      });
+    }
+    this._shadow.querySelectorAll(".hit").forEach((hit) => {
+      hit.addEventListener("click", () => this._openMoreInfo());
+    });
 
     this._lastState = state;
     this._lastLayout = layout;
+    this._lastView = view;
   }
 
   _styles(accent) {
@@ -260,6 +388,10 @@ class SkodaOrderCard extends HTMLElement {
           display: block; width: 100%; border: 0; padding: 0; margin: 0;
           background: transparent; color: inherit; text-align: left; cursor: pointer; font: inherit;
         }
+        .photo-btn {
+          display: block; width: 100%; border: 0; padding: 0; margin: 0;
+          background: transparent; color: inherit; cursor: pointer; font: inherit;
+        }
         .hero { padding: 1rem 1.1rem .85rem; }
         .hero.compact { padding-bottom: .35rem; }
         .hero-top { display: flex; justify-content: space-between; gap: .75rem; align-items: flex-start; }
@@ -276,6 +408,14 @@ class SkodaOrderCard extends HTMLElement {
           background: radial-gradient(ellipse at 50% 78%, color-mix(in srgb, var(--skoda-paint) 22%, transparent), transparent 64%);
         }
         .photo img { position: absolute; display: block; max-width: none; }
+        .photo-dots {
+          display: flex; justify-content: center; gap: .35rem; margin: .1rem 0 .05rem;
+        }
+        .photo-dots span {
+          width: 6px; height: 6px; border-radius: 50%;
+          background: var(--divider-color, rgba(127,127,127,.35));
+        }
+        .photo-dots span.active { background: var(--skoda-paint); }
         .chips { display: flex; gap: .45rem; flex-wrap: wrap; margin-top: .45rem; }
         .chip {
           font-size: .7rem; opacity: .85;
@@ -343,7 +483,7 @@ if (!window.customCards.some((card) => card.type === "skoda-order-card")) {
       const attr = state && state.attributes;
       if (!attr || (!attr.image_crop && !attr.commission_id)) return null;
       return {
-        config: { type: "custom:skoda-order-card", entity: entityId, layout: "combined" },
+        config: { type: "custom:skoda-order-card", entity: entityId, layout: "combined", view: "side" },
       };
     },
   });

@@ -42,3 +42,31 @@ def test_card_js_registers_custom_element():
     assert 'customElements.define("skoda-order-card"' in src
     assert "window.customCards" in src
     assert "MutationObserver" not in src
+
+
+def test_card_config_form_includes_view():
+    src = JS.read_text(encoding="utf-8")
+    assert 'name: "view"' in src
+    assert '{ value: "side", label: "Seite" }' in src
+    assert '{ value: "boot", label: "Kofferraum" }' in src
+
+
+def test_card_js_persists_view_in_local_storage():
+    src = JS.read_text(encoding="utf-8")
+    assert "skoda-order-card:" in src
+    assert "localStorage.getItem" in src
+    assert "localStorage.setItem" in src
+    assert ":view" in src
+
+
+def test_card_js_keeps_home_photo_frame():
+    src = JS.read_text(encoding="utf-8")
+    assert "aspect-ratio:16/9" not in src
+    assert "aspect-ratio:16/6" in src
+    assert "object-fit:cover" in src
+
+
+def test_card_js_applies_config_view_changes():
+    src = JS.read_text(encoding="utf-8")
+    assert "_lastView" in src
+    assert ":configView" in src

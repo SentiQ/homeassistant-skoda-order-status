@@ -74,6 +74,7 @@ You can also search the card picker for **Škoda Order Status**. YAML works too:
 type: custom:skoda-order-card
 entity: sensor.skoda_elroq_bestellstatus
 layout: combined   # combined (default) | hero | timeline
+view: side         # side (default) | front | rear | interior_front | interior_side | boot
 ```
 
 | Layout     | Content                                      |
@@ -81,6 +82,8 @@ layout: combined   # combined (default) | hero | timeline
 | `combined` | Configurator photo, specs, checkpoint timeline |
 | `hero`     | Photo and specs only                         |
 | `timeline` | Checkpoint row only                          |
+
+Tap the photo to cycle views. The last choice is remembered in this browser.
 
 ## Automations
 
