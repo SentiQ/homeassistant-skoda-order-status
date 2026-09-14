@@ -17,6 +17,7 @@ This fills the gap left by the official Škoda integration: order tracking in th
 - German status labels and checkpoint dates
 - Configurable polling interval (default: 1 hour)
 - Refresh token stored securely in the config entry
+- Lovelace card (`custom:skoda-order-card`) with configurator image and production timeline
 
 ## Installation
 
@@ -54,6 +55,18 @@ After installation and restart, use the **Add integration** button above or:
 | `sensor.<device>_bestellstatus` | Current order status |
 
 Attributes include model, trim, colours, commission ID, checkpoint dates, and pending steps.
+
+## Lovelace card
+
+After installing the integration and restarting Home Assistant, the card **Škoda Order Status** is available in the dashboard card picker. No extra HACS frontend plugin is required.
+
+```yaml
+type: custom:skoda-order-card
+entity: sensor.skoda_elroq_bestellstatus
+layout: combined   # combined (default) | hero | timeline
+```
+
+`combined` shows the vehicle render, specs, and checkpoint timeline. `hero` hides the timeline. `timeline` hides the photo.
 
 ## Automations
 
