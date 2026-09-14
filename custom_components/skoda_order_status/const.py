@@ -29,3 +29,30 @@ STATUS_LABELS: Final = {
     "IN_DELIVERY": "Unterwegs",
     "TO_HANDOVER": "Zur Übergabe",
 }
+
+VERSION: Final = "1.0.6"
+
+CHECKPOINT_STATUSES: Final = (
+    "ORDER_CONFIRMED",
+    "IN_PRODUCTION",
+    "IN_DELIVERY",
+    "TO_HANDOVER",
+)
+
+DEFAULT_ACCENT: Final = "#4a7a62"
+
+PAINT_COLORS: Final = {
+    "Timiano-Grün": "#3d6b54",
+    "Sage-Grün": "#6b7f5a",
+    "Race-Blau": "#1e3a5f",
+    "Energy-Blau": "#2f5f8a",
+    "Velvet-Rot": "#7a2430",
+    "Phoenix-Orange": "#c45c2a",
+    "Graphite-Grau": "#5c5c5c",
+    "Steel-Grau": "#7a7d80",
+    "Pebble-Silber": "#b8b5ae",
+    "Brilliant-Silber": "#c5c7c8",
+    "Moon-Weiß": "#e8e4dc",
+    "Candy-Weiß": "#f4f4f4",
+    "Black-Magic": "#1a1a1a",
+}
