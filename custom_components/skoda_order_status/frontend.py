@@ -18,14 +18,22 @@ DATA_KEY = f"{DOMAIN}_frontend"
 CARD_PATH = f"/{DOMAIN}/skoda-order-card.js"
 
 
+def _card_url() -> str:
+    js_path = WWW_DIR / "skoda-order-card.js"
+    stamp = VERSION
+    if js_path.exists():
+        stamp = f"{VERSION}.{int(js_path.stat().st_mtime)}"
+    return f"{CARD_PATH}?v={stamp}"
+
+
 async def async_register_frontend(hass: HomeAssistant) -> None:
     """Serve www/ and load the card once per Home Assistant instance."""
     if hass.data.get(DATA_KEY):
         return
     await hass.http.async_register_static_paths(
-        [StaticPathConfig(f"/{DOMAIN}", str(WWW_DIR), True)]
+        [StaticPathConfig(f"/{DOMAIN}", str(WWW_DIR), False)]
     )
-    url = f"{CARD_PATH}?v={VERSION}"
+    url = _card_url()
     add_extra_js_url(hass, url)
     await _async_register_lovelace_resource(hass, url)
     hass.data[DATA_KEY] = True
