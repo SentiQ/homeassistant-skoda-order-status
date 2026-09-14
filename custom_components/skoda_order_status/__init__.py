@@ -9,14 +9,22 @@ from homeassistant.core import HomeAssistant
 
 from .const import CONF_COMMISSION_ID, DOMAIN
 from .coordinator import SkodaOrderConfigEntry, SkodaOrderCoordinator
+from .frontend import async_register_frontend
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [Platform.SENSOR]
 
 
+async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+    """Set up the integration and Lovelace card module."""
+    await async_register_frontend(hass)
+    return True
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: SkodaOrderConfigEntry) -> bool:
     """Set up Škoda Order Status from a config entry."""
+    await async_register_frontend(hass)
     coordinator = SkodaOrderCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
 
