@@ -1,4 +1,4 @@
-"""Stub HA and myskoda so renders tests run with pytest only."""
+"""Stub HA and myskoda so tests run with pytest only."""
 
 from __future__ import annotations
 
@@ -49,12 +49,8 @@ def _get_default_context() -> None:
     return None
 
 
-async def _async_get_clientsession(_hass: Any) -> Any:
+async def _async_get_clientsession(_hass: Any) -> None:
     return None
-
-
-def _add_extra_js_url(_hass: Any, _url: str) -> None:
-    pass
 
 
 _module("homeassistant")
@@ -82,7 +78,7 @@ _module(
 _module("homeassistant.util")
 _module("homeassistant.util.ssl", get_default_context=_get_default_context)
 _module("homeassistant.components")
-_module("homeassistant.components.frontend", add_extra_js_url=_add_extra_js_url)
+_module("homeassistant.components.frontend")
 _module("homeassistant.components.http", StaticPathConfig=_StaticPathConfig)
 _module("myskoda", MySkoda=_MySkoda)
 _module("aiohttp", ClientSession=_ClientSession)
