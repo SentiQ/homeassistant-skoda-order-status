@@ -62,8 +62,8 @@ class SkodaOrderCard extends HTMLElement {
   }
 
   setConfig(config) {
-    if (!config || !config.entity) {
-      throw new Error("Bitte eine Entity wählen");
+    if (!config) {
+      throw new Error("Ungültige Konfiguration");
     }
     this._config = { layout: "combined", ...config };
   }
@@ -80,7 +80,19 @@ class SkodaOrderCard extends HTMLElement {
     return 5;
   }
 
+  getGridOptions() {
+    const layout = (this._config && this._config.layout) || "combined";
+    if (layout === "timeline") {
+      return { columns: 12, min_columns: 6, rows: 2, min_rows: 2 };
+    }
+    if (layout === "hero") {
+      return { columns: 12, min_columns: 6, rows: 4, min_rows: 3 };
+    }
+    return { columns: 12, min_columns: 6, rows: 6, min_rows: 4 };
+  }
+
   _openMoreInfo() {
+    if (!this._config || !this._config.entity) return;
     this.dispatchEvent(
       new CustomEvent("hass-more-info", {
         bubbles: true,
@@ -97,6 +109,15 @@ class SkodaOrderCard extends HTMLElement {
     }
 
     const layout = this._config.layout || "combined";
+    if (!this._config.entity) {
+      this._lastState = undefined;
+      this._lastLayout = undefined;
+      this._shadow.innerHTML = `
+        <ha-card><div class="pad warn">Bitte eine Entity wählen</div></ha-card>
+        ${this._styles()}
+      `;
+      return;
+    }
     const state = this._hass && this._hass.states[this._config.entity];
     if (!state) {
       this._lastState = undefined;
@@ -209,8 +230,11 @@ class SkodaOrderCard extends HTMLElement {
     const paint = accent || "#4a7a62";
     return `
       <style>
-        :host { --skoda-paint: ${paint}; }
+        :host { display: block; height: 100%; --skoda-paint: ${paint}; }
         ha-card {
+          display: block;
+          height: 100%;
+          box-sizing: border-box;
           background: var(--ha-card-background, var(--card-background-color, var(--primary-background-color)));
           color: var(--primary-text-color);
           overflow: hidden;
@@ -278,12 +302,24 @@ class SkodaOrderCard extends HTMLElement {
   }
 }
 
-customElements.define("skoda-order-card", SkodaOrderCard);
+if (!customElements.get("skoda-order-card")) {
+  customElements.define("skoda-order-card", SkodaOrderCard);
+}
 
 window.customCards = window.customCards || [];
-window.customCards.push({
-  type: "skoda-order-card",
-  name: "Škoda Order Status",
-  description: "Bestellstatus mit Konfigurator-Bild und Timeline",
-  preview: true,
-});
+if (!window.customCards.some((card) => card.type === "skoda-order-card")) {
+  window.customCards.push({
+    type: "skoda-order-card",
+    name: "Škoda Order Status",
+    description: "Bestellstatus mit Konfigurator-Bild und Timeline",
+    preview: true,
+    getEntitySuggestion: (hass, entityId) => {
+      const state = hass && hass.states && hass.states[entityId];
+      const attr = state && state.attributes;
+      if (!attr || (!attr.image_crop && !attr.commission_id)) return null;
+      return {
+        config: { type: "custom:skoda-order-card", entity: entityId, layout: "combined" },
+      };
+    },
+  });
+}

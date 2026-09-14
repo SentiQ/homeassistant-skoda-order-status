@@ -58,7 +58,17 @@ Attributes include model, trim, colours, commission ID, checkpoint dates, and pe
 
 ## Lovelace card
 
-After installing the integration and restarting Home Assistant, the card **Škoda Order Status** is available in the dashboard card picker. No extra HACS frontend plugin is required.
+The integration ships the Lovelace card **Škoda Order Status** (`custom:skoda-order-card`). No extra HACS frontend plugin and no manual resource entry are required.
+
+After install or update: **restart Home Assistant**, then **hard-refresh** the dashboard (`Ctrl+Shift+R` / `Cmd+Shift+R`). The card JS is cached aggressively; a normal reload is often not enough.
+
+### Add the card
+
+1. Edit a dashboard → **Add card**
+2. Pick the order sensor (`sensor.*_bestellstatus`), not a generic tile
+3. Choose **Škoda Order Status** from the suggestions (Community section)
+
+You can also search the card picker for **Škoda Order Status**. YAML works too:
 
 ```yaml
 type: custom:skoda-order-card
@@ -66,7 +76,11 @@ entity: sensor.skoda_elroq_bestellstatus
 layout: combined   # combined (default) | hero | timeline
 ```
 
-`combined` shows the vehicle render, specs, and checkpoint timeline. `hero` hides the timeline. `timeline` hides the photo.
+| Layout     | Content                                      |
+| ---------- | -------------------------------------------- |
+| `combined` | Configurator photo, specs, checkpoint timeline |
+| `hero`     | Photo and specs only                         |
+| `timeline` | Checkpoint row only                          |
 
 ## Automations
 
