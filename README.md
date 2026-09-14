@@ -60,7 +60,7 @@ Attributes include model, trim, colours, commission ID, checkpoint dates, and pe
 
 The integration ships the Lovelace card **Škoda Order Status** (`custom:skoda-order-card`). No extra HACS frontend plugin and no manual resource entry are required.
 
-After install or update: **restart Home Assistant**, then **hard-refresh** the dashboard (`Ctrl+Shift+R` / `Cmd+Shift+R`). The card JS is cached aggressively; a normal reload is often not enough.
+After install or update, restart Home Assistant. If the card stays blank, hard-refresh the dashboard (`Ctrl+Shift+R` / `Cmd+Shift+R`) or clear the Companion App cache.
 
 ### Add the card
 
