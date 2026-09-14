@@ -58,8 +58,12 @@ def _add_extra_js_url(_hass: Any, _url: str) -> None:
 
 
 _module("homeassistant")
-_module("homeassistant.const", Platform=_Platform)
-_module("homeassistant.core", HomeAssistant=object)
+_module(
+    "homeassistant.const",
+    Platform=_Platform,
+    EVENT_COMPONENT_LOADED="component_loaded",
+)
+_module("homeassistant.core", HomeAssistant=object, Event=object)
 _module("homeassistant.config_entries", ConfigEntry=_ConfigEntry)
 _module("homeassistant.helpers")
 _module(
