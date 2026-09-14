@@ -12,6 +12,14 @@ function formatDate(iso) {
   return `${parts[2]}.${parts[1]}.${parts[0]}`;
 }
 
+function esc(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function cropCss(crop) {
   if (!crop || !crop.width || !crop.height) return null;
   const visW = crop.width - crop.left - crop.right;
@@ -91,12 +99,16 @@ class SkodaOrderCard extends HTMLElement {
     const layout = this._config.layout || "combined";
     const state = this._hass && this._hass.states[this._config.entity];
     if (!state) {
+      this._lastState = undefined;
+      this._lastLayout = undefined;
       this._shadow.innerHTML = `
         <ha-card><div class="pad warn">Entity nicht gefunden</div></ha-card>
         ${this._styles()}
       `;
       return;
     }
+
+    if (state === this._lastState && layout === this._lastLayout) return;
 
     const attr = state.attributes || {};
     const unavailable = state.state === "unavailable" || state.state === "unknown";
@@ -135,7 +147,7 @@ class SkodaOrderCard extends HTMLElement {
         <div class="step">
           <div class="dot${done ? " done" : ""}${isCurrent && !unavailable ? " current" : ""}"></div>
           <div class="step-label">${item.label}</div>
-          <div class="step-date">${formatDate(rec && rec.date)}</div>
+          <div class="step-date">${esc(formatDate(rec && rec.date))}</div>
         </div>`;
     }).join("");
 
@@ -147,20 +159,20 @@ class SkodaOrderCard extends HTMLElement {
             <div class="hero-top">
               <div>
                 <div class="kicker">Škoda Bestellung</div>
-                <div class="name">${model}${trim ? ` ${trim}` : ""}</div>
+                <div class="name">${esc(model)}${trim ? ` ${esc(trim)}` : ""}</div>
               </div>
-              <span class="badge">${layout === "timeline" ? "" : statusLabel}</span>
+              <span class="badge">${layout === "timeline" ? "" : esc(statusLabel)}</span>
             </div>
             ${showPhoto ? `
             <div class="photo" style="${crop ? crop.wrap : "aspect-ratio:16/6;"}">
-              <img alt="${model}" src="${picture}" style="${crop ? crop.img : "width:100%;height:100%;object-fit:contain;left:0;top:0;"}" />
+              <img alt="${esc(model)}" src="${esc(picture)}" style="${crop ? crop.img : "width:100%;height:100%;object-fit:contain;left:0;top:0;"}" />
             </div>` : ""}
-            <div class="chips">${chips.map((c) => `<span class="chip">${c}</span>`).join("")}</div>
+            <div class="chips">${chips.map((c) => `<span class="chip">${esc(c)}</span>`).join("")}</div>
           </div>` : `
           <div class="hero compact">
             <div class="hero-top">
               <div>
-                <div class="kicker">${model}</div>
+                <div class="kicker">${esc(model)}</div>
                 <div class="name">Bestellstatus</div>
               </div>
               <span class="badge">${doneCount} / ${CHECKPOINTS.length}</span>
@@ -188,6 +200,9 @@ class SkodaOrderCard extends HTMLElement {
     }
     const hit = this._shadow.querySelector(".hit");
     if (hit) hit.addEventListener("click", () => this._openMoreInfo());
+
+    this._lastState = state;
+    this._lastLayout = layout;
   }
 
   _styles(accent) {
