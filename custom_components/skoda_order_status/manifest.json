@@ -3,7 +3,7 @@
   "name": "Škoda Order Status",
   "codeowners": ["@SentiQ"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["frontend", "http"],
   "documentation": "https://github.com/SentiQ/homeassistant-skoda-order-status",
   "integration_type": "service",
   "iot_class": "cloud_polling",
