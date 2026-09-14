@@ -67,6 +67,10 @@ _module("homeassistant.core", HomeAssistant=object, Event=object)
 _module("homeassistant.config_entries", ConfigEntry=_ConfigEntry)
 _module("homeassistant.helpers")
 _module(
+    "homeassistant.helpers.config_validation",
+    config_entry_only_config_schema=lambda _domain: {},
+)
+_module(
     "homeassistant.helpers.aiohttp_client",
     async_get_clientsession=_async_get_clientsession,
 )

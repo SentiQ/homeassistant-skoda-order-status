@@ -1,9 +1,9 @@
 {
   "domain": "skoda_order_status",
   "name": "Škoda Order Status",
+  "after_dependencies": ["lovelace"],
   "codeowners": ["@SentiQ"],
   "config_flow": true,
-  "after_dependencies": ["lovelace"],
   "dependencies": ["frontend", "http"],
   "documentation": "https://github.com/SentiQ/homeassistant-skoda-order-status",
   "integration_type": "service",

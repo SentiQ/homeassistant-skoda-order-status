@@ -20,6 +20,12 @@ def test_version_matches_manifest():
     assert VERSION == manifest["version"]
 
 
+def test_manifest_keys_sorted_for_hassfest():
+    keys = list(json.loads(MANIFEST.read_text(encoding="utf-8")))
+    expected = ["domain", "name"] + sorted(k for k in keys if k not in {"domain", "name"})
+    assert keys == expected
+
+
 def test_card_url_uses_local_path_and_content_hash():
     digest = hashlib.sha256(JS.read_bytes()).hexdigest()[:10]
     url = _card_url()
