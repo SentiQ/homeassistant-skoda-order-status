@@ -145,13 +145,20 @@ class SkodaOrderCard extends HTMLElement {
     const crop = cropCss(attr.image_crop);
 
     const reached = attr.checkpoints_reached || [];
-    const pending = attr.checkpoints_pending || [];
     const reachedMap = Object.fromEntries(reached.map((item) => [item.status, item]));
-    const pendingMap = Object.fromEntries(pending.map((item) => [item.status, item]));
-    const currentIndex = CHECKPOINTS.findIndex((item) => pendingMap[item.status]);
-    const activeIndex = currentIndex === -1 ? CHECKPOINTS.length - 1 : Math.max(currentIndex, 0);
-    const doneCount = CHECKPOINTS.filter((item) => reachedMap[item.status]).length;
-    const fillPct = CHECKPOINTS.length > 1 ? (activeIndex / (CHECKPOINTS.length - 1)) * 100 : 0;
+    const lastReached = CHECKPOINTS.reduce((acc, item, index) => {
+      const rec = reachedMap[item.status];
+      return rec && rec.date ? index : acc;
+    }, -1);
+    const allDone =
+      lastReached === CHECKPOINTS.length - 1 &&
+      CHECKPOINTS.every((cp) => reachedMap[cp.status] && reachedMap[cp.status].date);
+    const doneCount = CHECKPOINTS.filter((item) => reachedMap[item.status] && reachedMap[item.status].date).length;
+    const segments = CHECKPOINTS.length - 1;
+    let fillPct = 0;
+    if (!unavailable && segments > 0 && lastReached >= 0) {
+      fillPct = allDone ? 100 : ((lastReached + 0.5) / segments) * 100;
+    }
 
     const chips = [];
     if (attr.battery_kwh != null) chips.push(`${attr.battery_kwh} kWh`);
@@ -161,16 +168,22 @@ class SkodaOrderCard extends HTMLElement {
     const steps = CHECKPOINTS.map((item, index) => {
       const rec = reachedMap[item.status];
       const done = Boolean(rec && rec.date);
-      const current = !unavailable && index === activeIndex && !CHECKPOINTS.every((cp) => reachedMap[cp.status] && reachedMap[cp.status].date);
-      const allDone = CHECKPOINTS.every((cp) => reachedMap[cp.status] && reachedMap[cp.status].date);
-      const isCurrent = current || (allDone && index === CHECKPOINTS.length - 1);
+      const isCurrent = !unavailable && !allDone && index === lastReached;
       return `
         <div class="step">
-          <div class="dot${done ? " done" : ""}${isCurrent && !unavailable ? " current" : ""}"></div>
+          <div class="dot${done ? " done" : ""}${isCurrent ? " current" : ""}"></div>
           <div class="step-label">${item.label}</div>
           <div class="step-date">${esc(formatDate(rec && rec.date))}</div>
         </div>`;
     }).join("");
+    const mids = CHECKPOINTS.slice(0, -1)
+      .map((_, index) => {
+        const done = lastReached > index;
+        const current = !unavailable && !allDone && index === lastReached;
+        const left = ((index + 1) / CHECKPOINTS.length) * 100;
+        return `<div class="dot mid${done ? " done" : ""}${current ? " current" : ""}" style="left:${left}%"></div>`;
+      })
+      .join("");
 
     this._shadow.innerHTML = `
       <ha-card class="${unavailable ? "dim" : ""}">
@@ -203,7 +216,8 @@ class SkodaOrderCard extends HTMLElement {
           ${showHero ? `<div class="divider"></div>` : ""}
           <div class="timeline ${unavailable ? "dim" : ""}">
             <div class="steps">
-              <div class="rail"><div class="rail-fill" style="width:${unavailable ? 0 : fillPct}%"></div></div>
+              <div class="rail"><div class="rail-fill" style="width:${fillPct}%"></div></div>
+              ${mids}
               ${steps}
             </div>
           </div>` : ""}
@@ -283,16 +297,27 @@ class SkodaOrderCard extends HTMLElement {
           background: var(--ha-card-background, var(--card-background-color));
         }
         .dot.done { background: var(--skoda-paint); border-color: var(--skoda-paint); }
+        .dot.mid {
+          position: absolute; top: 6px; width: 10px; height: 10px; margin: 0 0 0 -5px; z-index: 1;
+        }
         .dot.current {
           border-color: var(--skoda-paint);
           box-shadow: 0 0 0 4px color-mix(in srgb, var(--skoda-paint) 28%, transparent);
           animation: skoda-pulse 2.4s ease-in-out infinite;
+        }
+        .dot.mid.current {
+          box-shadow: 0 0 0 3px color-mix(in srgb, var(--skoda-paint) 28%, transparent);
+          animation-name: skoda-pulse-mid;
         }
         .step-label { font-size: .68rem; font-weight: 600; }
         .step-date { font-size: .62rem; opacity: .5; margin-top: .1rem; }
         @keyframes skoda-pulse {
           0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--skoda-paint) 28%, transparent); }
           50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--skoda-paint) 8%, transparent); }
+        }
+        @keyframes skoda-pulse-mid {
+          0%, 100% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--skoda-paint) 28%, transparent); }
+          50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--skoda-paint) 8%, transparent); }
         }
         @media (prefers-reduced-motion: reduce) {
           .dot.current { animation: none; }
