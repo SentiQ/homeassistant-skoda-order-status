@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Mapping
 from typing import Any
 
 import voluptuous as vol
@@ -64,6 +65,7 @@ class SkodaOrderStatusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._credentials: dict[str, str] = {}
         self._orders: list[dict[str, Any]] = []
         self._refresh_token: str | None = None
+        self._reauth_username: str = ""
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -94,6 +96,59 @@ class SkodaOrderStatusConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=STEP_USER_SCHEMA,
+            errors=errors,
+        )
+
+    async def async_step_reauth(
+        self, entry_data: Mapping[str, Any]
+    ) -> ConfigFlowResult:
+        """Start reauthentication after MyŠkoda rejected the stored credentials."""
+        self._reauth_username = entry_data.get(CONF_USERNAME, "")
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Let the user replace the stored MyŠkoda credentials."""
+        errors: dict[str, str] = {}
+        reauth_entry = self._get_reauth_entry()
+
+        if user_input is not None:
+            try:
+                _orders, refresh_token = await _discover_orders(
+                    self.hass,
+                    user_input[CONF_USERNAME],
+                    user_input[CONF_PASSWORD],
+                )
+            except SkodaOrderAuthError:
+                errors["base"] = "invalid_auth"
+            except Exception:  # noqa: BLE001
+                _LOGGER.exception("Unexpected exception during reauthentication")
+                errors["base"] = "cannot_connect"
+            else:
+                data = {
+                    **reauth_entry.data,
+                    CONF_USERNAME: user_input[CONF_USERNAME],
+                    CONF_PASSWORD: user_input[CONF_PASSWORD],
+                }
+                if refresh_token:
+                    data[CONF_REFRESH_TOKEN] = refresh_token
+                else:
+                    data.pop(CONF_REFRESH_TOKEN, None)
+                return self.async_update_reload_and_abort(reauth_entry, data=data)
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_USERNAME,
+                        default=self._reauth_username
+                        or reauth_entry.data.get(CONF_USERNAME, ""),
+                    ): str,
+                    vol.Required(CONF_PASSWORD): str,
+                }
+            ),
             errors=errors,
         )
 

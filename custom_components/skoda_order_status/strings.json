@@ -15,6 +15,14 @@
         "data": {
           "commission_id": "Bestellung"
         }
+      },
+      "reauth_confirm": {
+        "title": "MyŠkoda-Anmeldung erneuern",
+        "description": "Die Anmeldung ist fehlgeschlagen. Aktualisiere die MyŠkoda-Zugangsdaten.",
+        "data": {
+          "username": "E-Mail",
+          "password": "Passwort"
+        }
       }
     },
     "error": {
@@ -23,7 +31,8 @@
       "no_orders": "Keine offene Škoda-Bestellung im MyŠkoda-Konto gefunden."
     },
     "abort": {
-      "already_configured": "Diese Bestellung ist bereits eingerichtet."
+      "already_configured": "Diese Bestellung ist bereits eingerichtet.",
+      "reauth_successful": "Die Anmeldung wurde aktualisiert."
     }
   },
   "options": {

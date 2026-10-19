@@ -8,6 +8,7 @@ from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util.ssl import get_default_context
@@ -57,7 +58,7 @@ class SkodaOrderCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         try:
             data = await self._client.async_fetch_order(commission_id)
         except SkodaOrderAuthError as err:
-            raise UpdateFailed(f"Authentication failed: {err}") from err
+            raise ConfigEntryAuthFailed(f"Authentication failed: {err}") from err
         except SkodaOrderApiError as err:
             raise UpdateFailed(str(err)) from err
         except Exception as err:

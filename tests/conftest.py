@@ -20,15 +20,23 @@ class _Platform:
 
 
 class _ConfigEntry:
-    pass
+    def __class_getitem__(cls, _item: Any) -> type:
+        return cls
 
 
 class _DataUpdateCoordinator:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        pass
+
     def __class_getitem__(cls, _item: Any) -> type:
         return cls
 
 
 class _UpdateFailed(Exception):
+    pass
+
+
+class _ConfigEntryAuthFailed(Exception):
     pass
 
 
@@ -49,11 +57,12 @@ def _get_default_context() -> None:
     return None
 
 
-async def _async_get_clientsession(_hass: Any) -> None:
+def _async_get_clientsession(_hass: Any) -> None:
     return None
 
 
 _module("homeassistant")
+_module("homeassistant.exceptions", ConfigEntryAuthFailed=_ConfigEntryAuthFailed)
 _module(
     "homeassistant.const",
     Platform=_Platform,

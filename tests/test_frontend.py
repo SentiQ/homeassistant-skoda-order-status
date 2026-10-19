@@ -3,7 +3,13 @@ import json
 from pathlib import Path
 
 from custom_components.skoda_order_status.const import VERSION
-from custom_components.skoda_order_status.frontend import CARD_PATHS, INTEGRATION_PATH, _card_url
+from custom_components.skoda_order_status.frontend import (
+    CARD_PATHS,
+    INTEGRATION_PATH,
+    _card_content_hash,
+    _card_url,
+    async_register_frontend,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT / "custom_components/skoda_order_status/www/skoda-order-card.js"
@@ -24,8 +30,48 @@ def test_manifest_keys_sorted_for_hassfest():
 
 def test_card_url_uses_integration_path_and_content_hash():
     digest = hashlib.sha256(JS.read_bytes()).hexdigest()[:10]
-    url = _card_url()
-    assert url == f"{INTEGRATION_PATH}?v={VERSION}.{digest}"
+    assert _card_content_hash() == digest
+    assert _card_url(digest) == f"{INTEGRATION_PATH}?v={VERSION}.{digest}"
+
+
+def test_card_content_hash_missing(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        "custom_components.skoda_order_status.frontend.WWW_DIR", tmp_path
+    )
+    assert _card_content_hash() is None
+
+
+def test_register_frontend_hashes_card_via_executor(monkeypatch):
+    import asyncio
+
+    calls = []
+
+    async def _run():
+        class Http:
+            async def async_register_static_paths(self, paths):
+                self.paths = paths
+
+        class Hass:
+            def __init__(self):
+                self.data = {}
+                self.http = Http()
+
+            async def async_add_executor_job(self, func, *args):
+                calls.append(func)
+                return func(*args)
+
+        hass = Hass()
+        monkeypatch.setattr(
+            "custom_components.skoda_order_status.frontend._async_register_lovelace_resource",
+            _ready,
+        )
+        await async_register_frontend(hass)
+
+    async def _ready(_hass, _url):
+        return True
+
+    asyncio.run(_run())
+    assert calls == [_card_content_hash]
 
 
 def test_card_paths_include_legacy_local_url():

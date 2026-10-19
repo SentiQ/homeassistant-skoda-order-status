@@ -21,12 +21,16 @@ INTEGRATION_PATH = f"/{DOMAIN}/{CARD_FILE}"
 CARD_PATHS = (INTEGRATION_PATH, f"/local/{DOMAIN}/{CARD_FILE}")
 
 
-def _card_url() -> str:
+def _card_content_hash() -> str | None:
+    """Return a short content hash, or None when the card file is missing."""
     js_path = WWW_DIR / CARD_FILE
-    stamp = VERSION
-    if js_path.exists():
-        stamp = f"{VERSION}.{hashlib.sha256(js_path.read_bytes()).hexdigest()[:10]}"
-    return f"{INTEGRATION_PATH}?v={stamp}"
+    if not js_path.exists():
+        return None
+    return hashlib.sha256(js_path.read_bytes()).hexdigest()[:10]
+
+
+def _card_url(content_hash: str) -> str:
+    return f"{INTEGRATION_PATH}?v={VERSION}.{content_hash}"
 
 
 async def async_register_frontend(hass: HomeAssistant) -> None:
@@ -34,15 +38,15 @@ async def async_register_frontend(hass: HomeAssistant) -> None:
     if hass.data.get(DATA_KEY):
         return
 
-    js_path = WWW_DIR / CARD_FILE
-    if not js_path.exists():
-        _LOGGER.warning("Lovelace card missing at %s", js_path)
+    content_hash = await hass.async_add_executor_job(_card_content_hash)
+    if content_hash is None:
+        _LOGGER.warning("Lovelace card missing at %s", WWW_DIR / CARD_FILE)
         return
 
     await hass.http.async_register_static_paths(
         [StaticPathConfig(f"/{DOMAIN}", str(WWW_DIR), False)]
     )
-    url = _card_url()
+    url = _card_url(content_hash)
     hass.data[DATA_KEY] = True
     if await _async_register_lovelace_resource(hass, url):
         return
@@ -51,7 +55,10 @@ async def async_register_frontend(hass: HomeAssistant) -> None:
         if event.data.get("component") != "lovelace":
             return
         unsub()
-        await _async_register_lovelace_resource(hass, _card_url())
+        refreshed_hash = await hass.async_add_executor_job(_card_content_hash)
+        if refreshed_hash is None:
+            return
+        await _async_register_lovelace_resource(hass, _card_url(refreshed_hash))
 
     unsub = hass.bus.async_listen(EVENT_COMPONENT_LOADED, _on_lovelace_loaded)
 
