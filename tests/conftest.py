@@ -9,6 +9,8 @@ from typing import Any
 
 def _module(name: str, **attrs: Any) -> ModuleType:
     mod = ModuleType(name)
+    if "." in name or name == "myskoda":
+        mod.__path__ = []  # type: ignore[attr-defined]
     for key, value in attrs.items():
         setattr(mod, key, value)
     sys.modules[name] = mod
@@ -45,6 +47,18 @@ class _ClientSession:
 
 
 class _MySkoda:
+    pass
+
+
+class _AuthorizationFailedError(Exception):
+    pass
+
+
+class _NotAuthorizedError(Exception):
+    pass
+
+
+class _TokenExpiredError(Exception):
     pass
 
 
@@ -90,4 +104,11 @@ _module("homeassistant.components")
 _module("homeassistant.components.frontend")
 _module("homeassistant.components.http", StaticPathConfig=_StaticPathConfig)
 _module("myskoda", MySkoda=_MySkoda)
+_module("myskoda.auth")
+_module(
+    "myskoda.auth.authorization",
+    AuthorizationFailedError=_AuthorizationFailedError,
+    NotAuthorizedError=_NotAuthorizedError,
+    TokenExpiredError=_TokenExpiredError,
+)
 _module("aiohttp", ClientSession=_ClientSession)

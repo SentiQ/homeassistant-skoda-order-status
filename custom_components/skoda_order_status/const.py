@@ -30,7 +30,7 @@ STATUS_LABELS: Final = {
     "TO_HANDOVER": "Zur Übergabe",
 }
 
-VERSION: Final = "1.2.1"
+VERSION: Final = "1.2.2"
 
 CHECKPOINT_STATUSES: Final = (
     "ORDER_CONFIRMED",

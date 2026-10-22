@@ -20,6 +20,13 @@ function esc(value) {
     .replace(/"/g, "&quot;");
 }
 
+const DEFAULT_ACCENT = "#4a7a62";
+const HEX_COLOR = /^#[0-9a-fA-F]{3,8}$/;
+
+function accentColor(value) {
+  return typeof value === "string" && HEX_COLOR.test(value) ? value : DEFAULT_ACCENT;
+}
+
 function cropCss(crop) {
   if (!crop || !crop.width || !crop.height) return null;
   const visW = crop.width - crop.left - crop.right;
@@ -232,7 +239,7 @@ class SkodaOrderCard extends HTMLElement {
 
     const attr = state.attributes || {};
     const unavailable = state.state === "unavailable" || state.state === "unknown";
-    const accent = attr.accent_color || "#4a7a62";
+    const accent = accentColor(attr.accent_color);
     const model = attr.model || "Škoda";
     const trim = attr.trim_level || "";
     const paint = attr.paint_name || "";
@@ -369,7 +376,7 @@ class SkodaOrderCard extends HTMLElement {
   }
 
   _styles(accent) {
-    const paint = accent || "#4a7a62";
+    const paint = accentColor(accent);
     return `
       <style>
         :host { display: block; height: 100%; --skoda-paint: ${paint}; }

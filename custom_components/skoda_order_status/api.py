@@ -9,6 +9,11 @@ from typing import Any
 
 from aiohttp import ClientSession
 from myskoda import MySkoda
+from myskoda.auth.authorization import (
+    AuthorizationFailedError,
+    NotAuthorizedError,
+    TokenExpiredError,
+)
 
 from .const import GARAGE_PATH
 
@@ -21,6 +26,10 @@ class SkodaOrderApiError(Exception):
 
 class SkodaOrderAuthError(SkodaOrderApiError):
     """Authentication failed."""
+
+
+_AUTH_ERRORS = (AuthorizationFailedError, NotAuthorizedError)
+_REFRESH_RETRY_ERRORS = (*_AUTH_ERRORS, TokenExpiredError)
 
 
 class SkodaOrderApiClient:
@@ -81,13 +90,17 @@ class SkodaOrderApiClient:
             try:
                 await myskoda.connect(refresh_token=self._refresh_token)
                 return
-            except Exception as err:  # noqa: BLE001
+            except _REFRESH_RETRY_ERRORS as err:
                 _LOGGER.debug("Refresh token login failed, retrying with password: %s", err)
+            except Exception as err:
+                raise SkodaOrderApiError(str(err)) from err
 
         try:
             await myskoda.connect(email=self._username, password=self._password)
-        except Exception as err:
+        except _AUTH_ERRORS as err:
             raise SkodaOrderAuthError(str(err)) from err
+        except Exception as err:
+            raise SkodaOrderApiError(str(err)) from err
 
     async def _store_refresh_token(self, myskoda: MySkoda) -> None:
         token = await myskoda.get_refresh_token()

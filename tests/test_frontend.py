@@ -1,8 +1,9 @@
 import hashlib
 import json
+import re
 from pathlib import Path
 
-from custom_components.skoda_order_status.const import VERSION
+from custom_components.skoda_order_status.const import DEFAULT_ACCENT, PAINT_COLORS, VERSION
 from custom_components.skoda_order_status.frontend import (
     CARD_PATHS,
     INTEGRATION_PATH,
@@ -110,6 +111,25 @@ def test_card_js_keeps_home_photo_frame():
     assert "aspect-ratio:16/9" not in src
     assert "aspect-ratio:16/6" in src
     assert "object-fit:cover" in src
+
+
+def test_card_accent_accepts_only_hex():
+    src = JS.read_text(encoding="utf-8")
+    assert "function accentColor(" in src
+    assert "/^#[0-9a-fA-F]{3,8}$/" in src
+    assert "accentColor(attr.accent_color)" in src
+    assert "const paint = accentColor(accent)" in src
+    pattern = re.compile(r"^#[0-9a-fA-F]{3,8}$")
+    for color in (*PAINT_COLORS.values(), DEFAULT_ACCENT):
+        assert pattern.fullmatch(color)
+    for unsafe in (
+        "</style><img src=x onerror=alert(1)>",
+        "red",
+        "#4a7a62; }",
+        "#gg0000",
+        "var(--primary-color)",
+    ):
+        assert pattern.fullmatch(unsafe) is None
 
 
 def test_card_js_applies_config_view_changes():
