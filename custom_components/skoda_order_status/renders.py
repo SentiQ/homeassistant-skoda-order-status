@@ -105,11 +105,15 @@ def select_render(
 
 
 def paint_from_colour(exterior_colour: str | None) -> tuple[str | None, str]:
-    """Longest substring match in PAINT_COLORS; fallback Škoda green."""
+    """Earliest match in PAINT_COLORS (main paint precedes roof paint); fallback Škoda green."""
     if not exterior_colour:
         return None, DEFAULT_ACCENT
-    matches = [name for name in PAINT_COLORS if name in exterior_colour]
+    matches = [
+        (exterior_colour.find(name), -len(name), name)
+        for name in PAINT_COLORS
+        if name in exterior_colour
+    ]
     if not matches:
         return None, DEFAULT_ACCENT
-    name = max(matches, key=len)
+    name = min(matches)[2]
     return name, PAINT_COLORS[name]
