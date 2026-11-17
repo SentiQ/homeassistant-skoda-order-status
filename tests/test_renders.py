@@ -1,6 +1,7 @@
 from custom_components.skoda_order_status.renders import (
     list_images,
     paint_from_colour,
+    paint_names,
     parse_render_size,
     select_render,
 )
@@ -130,12 +131,29 @@ def test_parse_render_size_from_filename_not_rotation_suffix():
     assert parse_render_size("https://cdn.example/car.png") == (1920, 1080)
 
 
-def test_paint_longest_substring():
+def test_paint_main_colour_before_roof():
     name, hex_color = paint_from_colour(
         "Timiano-Grün Black-Magic Perleffekt"
     )
     assert name == "Timiano-Grün"
     assert hex_color == "#3d6b54"
+
+
+def test_paint_shorter_main_colour_wins_over_longer_roof_colour():
+    name, hex_color = paint_from_colour(
+        "Race-Blau Metallic, Dach Brilliant-Silber"
+    )
+    assert name == "Race-Blau"
+    assert hex_color == "#1e3a5f"
+
+
+def test_paint_names_lists_main_then_roof():
+    assert paint_names("Race-Blau Metallic, Dach Brilliant-Silber") == [
+        "Race-Blau",
+        "Brilliant-Silber",
+    ]
+    assert paint_names("Sonderlack XYZ") == []
+    assert paint_names(None) == []
 
 
 def test_paint_unknown_falls_back():

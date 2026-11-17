@@ -113,6 +113,11 @@ def test_card_js_keeps_home_photo_frame():
     assert "object-fit:cover" in src
 
 
+def test_card_js_lists_main_and_roof_paint():
+    src = JS.read_text(encoding="utf-8")
+    assert "[attr.paint_name, attr.roof_paint_name].filter(Boolean)" in src
+
+
 def test_card_accent_accepts_only_hex():
     src = JS.read_text(encoding="utf-8")
     assert "function accentColor(" in src
