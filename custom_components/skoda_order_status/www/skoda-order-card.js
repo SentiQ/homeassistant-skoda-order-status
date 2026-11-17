@@ -242,7 +242,7 @@ class SkodaOrderCard extends HTMLElement {
     const accent = accentColor(attr.accent_color);
     const model = attr.model || "Škoda";
     const trim = attr.trim_level || "";
-    const paint = [attr.paint_name, attr.roof_paint_name].filter(Boolean).join(" / ");
+    const paint = attr.exterior_colour || "";
     const statusLabel = unavailable ? "nicht verfügbar" : state.state;
     const images = collectImages(attr);
     const viewId = resolveViewId(images, this._config.entity, view, this.preview);

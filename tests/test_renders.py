@@ -156,6 +156,27 @@ def test_paint_names_lists_main_then_roof():
     assert paint_names(None) == []
 
 
+def test_paint_german_spelling_stahl_grau():
+    assert paint_names("Stahl-Grau Black-Magic Perleffekt") == [
+        "Stahl-Grau",
+        "Black-Magic",
+    ]
+    name, hex_color = paint_from_colour("Stahl-Grau Black-Magic Perleffekt")
+    assert name == "Stahl-Grau"
+    assert hex_color == "#7a7d80"
+
+
+def test_paint_matching_ignores_case_and_separators():
+    assert paint_names("Stahl Grau Uni, Black Magic Perleffekt") == [
+        "Stahl-Grau",
+        "Black-Magic",
+    ]
+    assert paint_names("Smokey-Diamond Silber Metallic") == ["Smokey-Diamond-Silber"]
+    assert paint_names("Smokey Diamond-Silber Metallic") == ["Smokey-Diamond-Silber"]
+    assert paint_names("Brillantsilber Metallic") == ["Brillant-Silber"]
+    assert paint_names("energie blau") == ["Energie-Blau"]
+
+
 def test_paint_unknown_falls_back():
     name, hex_color = paint_from_colour("Sonderlack XYZ")
     assert name is None

@@ -30,7 +30,7 @@ STATUS_LABELS: Final = {
     "TO_HANDOVER": "Zur Übergabe",
 }
 
-VERSION: Final = "1.2.3"
+VERSION: Final = "1.2.4"
 
 CHECKPOINT_STATUSES: Final = (
     "ORDER_CONFIRMED",
@@ -44,14 +44,21 @@ DEFAULT_ACCENT: Final = "#4a7a62"
 PAINT_COLORS: Final = {
     "Timiano-Grün": "#3d6b54",
     "Sage-Grün": "#6b7f5a",
+    "Olibo-Grün": "#6e7450",
+    "Mamba-Grün": "#7f9a3a",
     "Race-Blau": "#1e3a5f",
     "Energy-Blau": "#2f5f8a",
+    "Energie-Blau": "#2f5f8a",
     "Velvet-Rot": "#7a2430",
     "Phoenix-Orange": "#c45c2a",
     "Graphite-Grau": "#5c5c5c",
+    "Graphit-Grau": "#5c5c5c",
     "Steel-Grau": "#7a7d80",
+    "Stahl-Grau": "#7a7d80",
     "Pebble-Silber": "#b8b5ae",
     "Brilliant-Silber": "#c5c7c8",
+    "Brillant-Silber": "#c5c7c8",
+    "Smokey-Diamond-Silber": "#9c9d9b",
     "Moon-Weiß": "#e8e4dc",
     "Candy-Weiß": "#f4f4f4",
     "Black-Magic": "#1a1a1a",
