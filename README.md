@@ -1,6 +1,6 @@
 # Škoda Order Status for Home Assistant
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://github.com/hacs/integration)
 
 Home Assistant integration to track the status of a **pending Škoda vehicle order** via the unofficial MyŠkoda API.
 
@@ -21,15 +21,12 @@ This fills the gap left by the official Škoda integration: order tracking in th
 
 ## Installation
 
-### HACS (recommended)
+### Marketplace (formerly HACS, recommended)
 
-This integration is a **custom HACS repository** (not in the default HACS store).
-
-1. Open **HACS → Integrations**
-2. Click the menu (⋮) → **Custom repositories**
-3. Add `https://github.com/SentiQ/homeassistant-skoda-order-status`
-4. Click **Download** (pick a [release](https://github.com/SentiQ/homeassistant-skoda-order-status/releases) version if available)
-5. **Restart Home Assistant**
+1. Open the **Marketplace** in Home Assistant, or use the button above
+2. Search for **Škoda Order Status**
+3. Click **Download**
+4. **Restart Home Assistant**
 
 ### Manual
 
