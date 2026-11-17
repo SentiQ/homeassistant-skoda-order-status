@@ -14,7 +14,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_COMMISSION_ID, DOMAIN, STATUS_LABELS
 from .coordinator import SkodaOrderCoordinator
-from .renders import list_images, paint_from_colour, select_render
+from .renders import list_images, paint_from_colour, paint_names, select_render
 
 PARALLEL_UPDATES = 0
 
@@ -82,6 +82,7 @@ class SkodaOrderStatusSensor(CoordinatorEntity[SkodaOrderCoordinator], SensorEnt
         _picture_url, image_crop = select_render(data.get("compositeRenders"))
         images = list_images(data.get("compositeRenders"))
         paint_name, accent_color = paint_from_colour(spec.get("exteriorColour"))
+        other_paints = paint_names(spec.get("exteriorColour"))[1:]
 
         reached = []
         pending = []
@@ -129,4 +130,5 @@ class SkodaOrderStatusSensor(CoordinatorEntity[SkodaOrderCoordinator], SensorEnt
             "images": images,
             "accent_color": accent_color,
             "paint_name": paint_name,
+            "roof_paint_name": other_paints[0] if other_paints else None,
         }

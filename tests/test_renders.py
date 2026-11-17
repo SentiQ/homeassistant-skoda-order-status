@@ -1,6 +1,7 @@
 from custom_components.skoda_order_status.renders import (
     list_images,
     paint_from_colour,
+    paint_names,
     parse_render_size,
     select_render,
 )
@@ -144,6 +145,15 @@ def test_paint_shorter_main_colour_wins_over_longer_roof_colour():
     )
     assert name == "Race-Blau"
     assert hex_color == "#1e3a5f"
+
+
+def test_paint_names_lists_main_then_roof():
+    assert paint_names("Race-Blau Metallic, Dach Brilliant-Silber") == [
+        "Race-Blau",
+        "Brilliant-Silber",
+    ]
+    assert paint_names("Sonderlack XYZ") == []
+    assert paint_names(None) == []
 
 
 def test_paint_unknown_falls_back():

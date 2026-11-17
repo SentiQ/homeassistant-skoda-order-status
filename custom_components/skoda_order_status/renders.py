@@ -104,16 +104,21 @@ def select_render(
     return url, _crop_from_render(chosen, url)
 
 
-def paint_from_colour(exterior_colour: str | None) -> tuple[str | None, str]:
-    """Earliest match in PAINT_COLORS (main paint precedes roof paint); fallback Škoda green."""
+def paint_names(exterior_colour: str | None) -> list[str]:
+    """Known paint names in order of appearance (main paint first, then roof)."""
     if not exterior_colour:
-        return None, DEFAULT_ACCENT
-    matches = [
+        return []
+    matches = sorted(
         (exterior_colour.find(name), -len(name), name)
         for name in PAINT_COLORS
         if name in exterior_colour
-    ]
-    if not matches:
+    )
+    return [name for _pos, _len, name in matches]
+
+
+def paint_from_colour(exterior_colour: str | None) -> tuple[str | None, str]:
+    """Main paint name and its accent colour; fallback Škoda green."""
+    names = paint_names(exterior_colour)
+    if not names:
         return None, DEFAULT_ACCENT
-    name = min(matches)[2]
-    return name, PAINT_COLORS[name]
+    return names[0], PAINT_COLORS[names[0]]
