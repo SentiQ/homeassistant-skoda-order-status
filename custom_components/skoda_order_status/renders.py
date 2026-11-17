@@ -104,16 +104,31 @@ def select_render(
     return url, _crop_from_render(chosen, url)
 
 
+_PAINT_PATTERNS = {
+    name: re.compile(
+        r"[\s-]?".join(re.escape(part) for part in re.split(r"[\s-]+", name)),
+        re.IGNORECASE,
+    )
+    for name in PAINT_COLORS
+}
+
+
 def paint_names(exterior_colour: str | None) -> list[str]:
     """Known paint names in order of appearance (main paint first, then roof)."""
     if not exterior_colour:
         return []
     matches = sorted(
-        (exterior_colour.find(name), -len(name), name)
-        for name in PAINT_COLORS
-        if name in exterior_colour
+        (match.start(), -len(match.group()), match.end(), name)
+        for name, pattern in _PAINT_PATTERNS.items()
+        if (match := pattern.search(exterior_colour))
     )
-    return [name for _pos, _len, name in matches]
+    names: list[str] = []
+    covered = 0
+    for start, _len, end, name in matches:
+        if start >= covered:
+            names.append(name)
+            covered = end
+    return names
 
 
 def paint_from_colour(exterior_colour: str | None) -> tuple[str | None, str]:
